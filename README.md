@@ -1,5 +1,5 @@
 Description:
-Developed a fully functional web application for performing time series forecasting, ARIMA modeling, and post-estimation diagnostics using Streamlit. The application is equipped with both manual and automatic ARIMA modeling features, and a variety of diagnostic tools to assess model assumptions and forecast accuracy. The application was designed to handle different types of time series data, including the ability to log-transform and difference the data, and visualize results interactively.
+A fully functional web application for performing time series forecasting, ARIMA modeling, and post-estimation diagnostics using Streamlit. The application is equipped with both manual and automatic ARIMA modeling features, and a variety of diagnostic tools to assess model assumptions and forecast accuracy. The application was designed to handle different types of time series data, including the ability to log-transform and difference the data, and visualize results interactively.
 
 Key Features & Contributions:
 
