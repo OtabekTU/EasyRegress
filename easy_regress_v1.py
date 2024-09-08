@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.arima.model import ARIMA
-import pmdarima as pm
+#import pmdarima as pm
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, mean_squared_error
 import itertools
 import statsmodels.api as sm
@@ -1018,462 +1018,462 @@ if file is not None:
 
 # Manual ARIMA
 
-    if y_var:
-        if allow_analysis:
-            # arima_regressand is just a copy of the original data for the ARIMA purposes
-            arima_previous_nobs = len(arima_regressand)
-            do_arima = st.checkbox("Tick to start ARIMA analysis.") 
-            if do_arima:
-                st.markdown("---")
-                # Updating the sidebar to reflect on loaded data t
-                st.sidebar.markdown("---")
-                st.sidebar.markdown("<h1 style='text-align: center;'>ARIMA  Manual Analysis</h1>", unsafe_allow_html=True)
-                st.markdown("<h1 style='text-align: center;'>ARIMA Analysis</h1>", unsafe_allow_html=True)
-                st.markdown("<h1 style='text-align: center;'>Box Jenkins Methodology</h1>", unsafe_allow_html=True)
-                st.markdown("<h1 style='text-align: center;'>Step 1: Visual Inspection</h1>", unsafe_allow_html=True)
+#     if y_var:
+#         if allow_analysis:
+#             # arima_regressand is just a copy of the original data for the ARIMA purposes
+#             arima_previous_nobs = len(arima_regressand)
+#             do_arima = st.checkbox("Tick to start ARIMA analysis.") 
+#             if do_arima:
+#                 st.markdown("---")
+#                 # Updating the sidebar to reflect on loaded data t
+#                 st.sidebar.markdown("---")
+#                 st.sidebar.markdown("<h1 style='text-align: center;'>ARIMA  Manual Analysis</h1>", unsafe_allow_html=True)
+#                 st.markdown("<h1 style='text-align: center;'>ARIMA Analysis</h1>", unsafe_allow_html=True)
+#                 st.markdown("<h1 style='text-align: center;'>Box Jenkins Methodology</h1>", unsafe_allow_html=True)
+#                 st.markdown("<h1 style='text-align: center;'>Step 1: Visual Inspection</h1>", unsafe_allow_html=True)
 
-                # Plottimg exercise
-                label_name_8 = f"{regressand_str}"
-                plotting_exercise(regressand = arima_regressand,
-                                  label_name = label_name_8,
-                                  dates_checkbox = dates_checkbox,
-                                  dates = dates)
+#                 # Plottimg exercise
+#                 label_name_8 = f"{regressand_str}"
+#                 plotting_exercise(regressand = arima_regressand,
+#                                   label_name = label_name_8,
+#                                   dates_checkbox = dates_checkbox,
+#                                   dates = dates)
 
-                st.markdown("---")
+#                 st.markdown("---")
 
-                # Option to take the logs of data
-                arima_logs = st.checkbox(f"Tick to take **logs** of {regressand_str}.", key = "logs_2")
-                if arima_logs:
+#                 # Option to take the logs of data
+#                 arima_logs = st.checkbox(f"Tick to take **logs** of {regressand_str}.", key = "logs_2")
+#                 if arima_logs:
 
-                    # Updating the sidebar to reflect on loaded data
-                    index_1 += 1
-                    st.sidebar.markdown(f"{index_1}. The **logs** of {regressand_str} have been taken.")
+#                     # Updating the sidebar to reflect on loaded data
+#                     index_1 += 1
+#                     st.sidebar.markdown(f"{index_1}. The **logs** of {regressand_str} have been taken.")
 
-                    st.markdown("<h1 style = 'text-align: center;'>Log data</h1>", unsafe_allow_html = True)    
-                    arima_regressand = np.log(arima_regressand).copy()
+#                     st.markdown("<h1 style = 'text-align: center;'>Log data</h1>", unsafe_allow_html = True)    
+#                     arima_regressand = np.log(arima_regressand).copy()
 
-                    # Ensuring the None values are gone
-                    has_missing_3 = arima_regressand.isnull().values.any() # returns true of false
-                    if has_missing_3:
-                        arima_regressand = arima_regressand.dropna()
+#                     # Ensuring the None values are gone
+#                     has_missing_3 = arima_regressand.isnull().values.any() # returns true of false
+#                     if has_missing_3:
+#                         arima_regressand = arima_regressand.dropna()
 
-                        # Resetting the index of the arima_regressand and getting the last index of the arima_regressand
-                        arima_regressand = arima_regressand.reset_index(drop=True)
+#                         # Resetting the index of the arima_regressand and getting the last index of the arima_regressand
+#                         arima_regressand = arima_regressand.reset_index(drop=True)
                         
-                        # Extracting the new number of observations IF there are Nones
-                        arima_updated_nobs = len(arima_regressand)
+#                         # Extracting the new number of observations IF there are Nones
+#                         arima_updated_nobs = len(arima_regressand)
 
-                        # Making a comment in the sidebar
-                        index_1 += 1
-                        st.sidebar.markdown(f"{index_1}. After taking logs, **{regressand_str}** had None values. They were excluded for the regression purposes.<br>The new number of observations is: **{arima_updated_nobs} (old: {arima_previous_nobs})**.", unsafe_allow_html=True)
-                    else:
-                        # Making a comment in the sidebar
-                        index_1 += 1
-                        st.sidebar.markdown(f"{index_1}. After taking logs, **{regressand_str}** had no None values.<br>The number of observations is still: **{arima_previous_nobs})**.", unsafe_allow_html=True)
+#                         # Making a comment in the sidebar
+#                         index_1 += 1
+#                         st.sidebar.markdown(f"{index_1}. After taking logs, **{regressand_str}** had None values. They were excluded for the regression purposes.<br>The new number of observations is: **{arima_updated_nobs} (old: {arima_previous_nobs})**.", unsafe_allow_html=True)
+#                     else:
+#                         # Making a comment in the sidebar
+#                         index_1 += 1
+#                         st.sidebar.markdown(f"{index_1}. After taking logs, **{regressand_str}** had no None values.<br>The number of observations is still: **{arima_previous_nobs})**.", unsafe_allow_html=True)
 
-                        # Extracting the new number of observations IF there are Nones
-                        arima_updated_nobs = len(arima_regressand)
+#                         # Extracting the new number of observations IF there are Nones
+#                         arima_updated_nobs = len(arima_regressand)
 
-                    # Plotting exercise
-                    label_name_1 = f"Log {regressand_str}"
+#                     # Plotting exercise
+#                     label_name_1 = f"Log {regressand_str}"
                     
-                    # Plotting exercise
-                    plotting_exercise(regressand = arima_regressand,
-                                      label_name = label_name_1,
-                                      dates_checkbox = dates_checkbox,
-                                      dates = dates)
-                st.markdown("---")
+#                     # Plotting exercise
+#                     plotting_exercise(regressand = arima_regressand,
+#                                       label_name = label_name_1,
+#                                       dates_checkbox = dates_checkbox,
+#                                       dates = dates)
+#                 st.markdown("---")
 
-                # Breaking the data into in sample and out of sample data
-                second_forecast = st.checkbox("Tick to perform in sample and out of sample forecating ability of the model.", key = "arima split 1")
-                if second_forecast:
+#                 # Breaking the data into in sample and out of sample data
+#                 second_forecast = st.checkbox("Tick to perform in sample and out of sample forecating ability of the model.", key = "arima split 1")
+#                 if second_forecast:
 
-                    arima_in_sample_proportion = st.number_input("Proportion for in-sample data", step = 0.05, value = 0.7, key = "arima split 2")
+#                     arima_in_sample_proportion = st.number_input("Proportion for in-sample data", step = 0.05, value = 0.7, key = "arima split 2")
                    
-                    if arima_in_sample_proportion:
-                        if not "arima_updated_nobs" in globals():
-                            arima_updated_nobs = nobs
+#                     if arima_in_sample_proportion:
+#                         if not "arima_updated_nobs" in globals():
+#                             arima_updated_nobs = nobs
                         
-                        out_of_sample_proportion_2 = 1 - arima_in_sample_proportion
-                        arima_in_sample_nobs = round(arima_updated_nobs * arima_in_sample_proportion) 
+#                         out_of_sample_proportion_2 = 1 - arima_in_sample_proportion
+#                         arima_in_sample_nobs = round(arima_updated_nobs * arima_in_sample_proportion) 
 
-                        # Updating the sidebar to reflect on loaded data
-                        index_1 += 1
-                        st.sidebar.markdown(f"{index_1}. The in sample proportion is selected at **{round(arima_in_sample_proportion * 100)}%**. Out of sample proportion is selected at **{round(100 - arima_in_sample_proportion * 100)}%**.", unsafe_allow_html=True) 
-                        index_1 += 1
-                        st.sidebar.markdown(f"{index_1}. The in sample number of observations is: **{arima_in_sample_nobs} (before data splitting: {arima_updated_nobs})**. The number of observations to forecast is: **{arima_updated_nobs - arima_in_sample_nobs}**.", unsafe_allow_html=True) 
+#                         # Updating the sidebar to reflect on loaded data
+#                         index_1 += 1
+#                         st.sidebar.markdown(f"{index_1}. The in sample proportion is selected at **{round(arima_in_sample_proportion * 100)}%**. Out of sample proportion is selected at **{round(100 - arima_in_sample_proportion * 100)}%**.", unsafe_allow_html=True) 
+#                         index_1 += 1
+#                         st.sidebar.markdown(f"{index_1}. The in sample number of observations is: **{arima_in_sample_nobs} (before data splitting: {arima_updated_nobs})**. The number of observations to forecast is: **{arima_updated_nobs - arima_in_sample_nobs}**.", unsafe_allow_html=True) 
 
-                        # Splitting the data into in sample and out of sample data
-                        in_sample_arima_y, out_of_sample_arima_y = arima_regressand.iloc[:arima_in_sample_nobs].copy(), arima_regressand.iloc[arima_in_sample_nobs:].copy()
+#                         # Splitting the data into in sample and out of sample data
+#                         in_sample_arima_y, out_of_sample_arima_y = arima_regressand.iloc[:arima_in_sample_nobs].copy(), arima_regressand.iloc[arima_in_sample_nobs:].copy()
 
-                        # Checking for stationarity
-                        st.markdown("---")
-                        if arima_logs:
-                            st.markdown(f"<h1 style = 'text-align: center;'>Checking log {regressand_str} for stationarity</h1>", unsafe_allow_html = True)    
-                        else:
-                            st.markdown(f"<h1 style = 'text-align: center;'>Checking {regressand_str} for stationarity</h1>", unsafe_allow_html = True)
+#                         # Checking for stationarity
+#                         st.markdown("---")
+#                         if arima_logs:
+#                             st.markdown(f"<h1 style = 'text-align: center;'>Checking log {regressand_str} for stationarity</h1>", unsafe_allow_html = True)    
+#                         else:
+#                             st.markdown(f"<h1 style = 'text-align: center;'>Checking {regressand_str} for stationarity</h1>", unsafe_allow_html = True)
 
-                        # Conducting the first round of Augmented Dickey Fuller test
-                        st.markdown("<h1 style = 'text-align: center;'>Augmented Dickey Fuller test test</h1>", unsafe_allow_html = True)
-                        adf_test_1 = adfuller(in_sample_arima_y)
+#                         # Conducting the first round of Augmented Dickey Fuller test
+#                         st.markdown("<h1 style = 'text-align: center;'>Augmented Dickey Fuller test test</h1>", unsafe_allow_html = True)
+#                         adf_test_1 = adfuller(in_sample_arima_y)
 
-                        if adf_test_1[1] > 0.05:
-                            st.write("")
-                            st.write(f"p value is **{round(adf_test_1[1], 3)}**. Hence, There is not enough information to reject Ho. \n**We have evidence of a unit root**.")
-                            st.write(f"**Data is not stationary**.")
-                            st.markdown("---")           
-                        else:
-                            st.write("")
-                            st.write(f"p value is **{round(adf_test_1[1], 3)}**. Hence, we have enough evidence to reject Ho. \nThere is **no evidence of a unit root**.")
-                            st.write(f"**Data is stationary**.")
-                            st.markdown("---")
+#                         if adf_test_1[1] > 0.05:
+#                             st.write("")
+#                             st.write(f"p value is **{round(adf_test_1[1], 3)}**. Hence, There is not enough information to reject Ho. \n**We have evidence of a unit root**.")
+#                             st.write(f"**Data is not stationary**.")
+#                             st.markdown("---")           
+#                         else:
+#                             st.write("")
+#                             st.write(f"p value is **{round(adf_test_1[1], 3)}**. Hence, we have enough evidence to reject Ho. \nThere is **no evidence of a unit root**.")
+#                             st.write(f"**Data is stationary**.")
+#                             st.markdown("---")
 
-                        # Plotting the first round of correlograms
-                        if arima_logs:
-                            st.markdown(f"<h1 style = 'text-align: center;'>Correlograms for log {regressand_str}</h1>", unsafe_allow_html = True)    
-                        else:
-                            st.markdown(f"<h1 style = 'text-align: center;'>Correlograms for {regressand_str}</h1>", unsafe_allow_html = True)
+#                         # Plotting the first round of correlograms
+#                         if arima_logs:
+#                             st.markdown(f"<h1 style = 'text-align: center;'>Correlograms for log {regressand_str}</h1>", unsafe_allow_html = True)    
+#                         else:
+#                             st.markdown(f"<h1 style = 'text-align: center;'>Correlograms for {regressand_str}</h1>", unsafe_allow_html = True)
 
 
-                        # Plotting ACF and PACF
-                        acf_pacf(series1 = in_sample_arima_y, series2 = in_sample_arima_y)
-                        st.markdown("---")
+#                         # Plotting ACF and PACF
+#                         acf_pacf(series1 = in_sample_arima_y, series2 = in_sample_arima_y)
+#                         st.markdown("---")
 
-                        # Option to take difference of data
-                        if arima_logs:
-                            take_difference2 = st.checkbox(f"Tick to take a **difference** of **log** {regressand_str}.")
-                        else:
-                            take_difference2 = st.checkbox(f"Tick to take a **difference** of {regressand_str}.")
+#                         # Option to take difference of data
+#                         if arima_logs:
+#                             take_difference2 = st.checkbox(f"Tick to take a **difference** of **log** {regressand_str}.")
+#                         else:
+#                             take_difference2 = st.checkbox(f"Tick to take a **difference** of {regressand_str}.")
 
-                        if take_difference2:
+#                         if take_difference2:
 
-                            # Updating the sidebar to reflect on loaded data
-                            index_1 += 1
-                            st.sidebar.markdown(f"{index_1}. Please, note that the differences are taken **solely** for visualisation purposes. The data will **not** be differenced in the stage of manual ARIMA estimation", unsafe_allow_html = True)   
+#                             # Updating the sidebar to reflect on loaded data
+#                             index_1 += 1
+#                             st.sidebar.markdown(f"{index_1}. Please, note that the differences are taken **solely** for visualisation purposes. The data will **not** be differenced in the stage of manual ARIMA estimation", unsafe_allow_html = True)   
 
-                            # Taking the difference
-                            in_sample_arima_y_diff = in_sample_arima_y.diff().dropna().copy()
+#                             # Taking the difference
+#                             in_sample_arima_y_diff = in_sample_arima_y.diff().dropna().copy()
 
-                            # Resetting the index of in_sample_arima_y_diff
-                            in_sample_arima_y_diff = in_sample_arima_y_diff.reset_index(drop=True)
+#                             # Resetting the index of in_sample_arima_y_diff
+#                             in_sample_arima_y_diff = in_sample_arima_y_diff.reset_index(drop=True)
 
-                            # Extracting the new number of observations
-                            if arima_logs:
-                                arima_previous_nobs = arima_updated_nobs
-                            arima_updated_nobs = len(in_sample_arima_y_diff)
+#                             # Extracting the new number of observations
+#                             if arima_logs:
+#                                 arima_previous_nobs = arima_updated_nobs
+#                             arima_updated_nobs = len(in_sample_arima_y_diff)
                             
-                            if arima_logs:
-                                st.markdown(f"<h1 style = 'text-align: center;'>Plot of differenced log {regressand_str}</h1>", unsafe_allow_html = True)
-                                # Updating the sidebar to reflect on loaded data
-                                index_1 += 1
-                                st.sidebar.markdown(f"{index_1}. The **difference** of the **log {regressand_str}** has been taken. <br>The new number of observations is: **{arima_updated_nobs} (old: {arima_previous_nobs})**", unsafe_allow_html = True)                
+#                             if arima_logs:
+#                                 st.markdown(f"<h1 style = 'text-align: center;'>Plot of differenced log {regressand_str}</h1>", unsafe_allow_html = True)
+#                                 # Updating the sidebar to reflect on loaded data
+#                                 index_1 += 1
+#                                 st.sidebar.markdown(f"{index_1}. The **difference** of the **log {regressand_str}** has been taken. <br>The new number of observations is: **{arima_updated_nobs} (old: {arima_previous_nobs})**", unsafe_allow_html = True)                
                             
-                            else:
-                                st.markdown(f"<h1 style = 'text-align: center;'>Plot of differenced {regressand_str}</h1>", unsafe_allow_html = True)
-                                # Updating the sidebar to reflect on loaded data
-                                index_1 += 1
-                                st.sidebar.markdown(f"{index_1}. The **difference** of the **{regressand_str}** has been taken. <br>The new number of observations is: **{arima_updated_nobs} (old: {arima_previous_nobs})**", unsafe_allow_html = True)                
+#                             else:
+#                                 st.markdown(f"<h1 style = 'text-align: center;'>Plot of differenced {regressand_str}</h1>", unsafe_allow_html = True)
+#                                 # Updating the sidebar to reflect on loaded data
+#                                 index_1 += 1
+#                                 st.sidebar.markdown(f"{index_1}. The **difference** of the **{regressand_str}** has been taken. <br>The new number of observations is: **{arima_updated_nobs} (old: {arima_previous_nobs})**", unsafe_allow_html = True)                
                             
-                            # Plotting exercise
-                            if arima_logs:   
-                                label_name_2 = f"Differenced log {regressand_str}" # diffrencesof the log data
-                            else:
-                                label_name_2 = f"Differenced {regressand_str}" # diffrencesof the log data
+#                             # Plotting exercise
+#                             if arima_logs:   
+#                                 label_name_2 = f"Differenced log {regressand_str}" # diffrencesof the log data
+#                             else:
+#                                 label_name_2 = f"Differenced {regressand_str}" # diffrencesof the log data
                             
-                            # Plotting exercise
+#                             # Plotting exercise
 
-                            plotting_exercise(regressand = in_sample_arima_y_diff,
-                                      label_name = label_name_2,
-                                      dates_checkbox = dates_checkbox,
-                                      dates = dates)
+#                             plotting_exercise(regressand = in_sample_arima_y_diff,
+#                                       label_name = label_name_2,
+#                                       dates_checkbox = dates_checkbox,
+#                                       dates = dates)
 
-                            st.markdown("---")
+#                             st.markdown("---")
 
-                            # Correlograms for differenced data
-                            # This is to see what number to submit as d
-                            if arima_logs and take_difference2:
-                                st.markdown(f"<h1 style = 'text-align: center;'>Correlograms for differenced log {regressand_str}</h1>", unsafe_allow_html = True)
-                            elif arima_logs:
-                                st.markdown(f"<h1 style = 'text-align: center;'>Correlograms for log {regressand_str}</h1>", unsafe_allow_html = True)
-                            elif take_difference2:
-                                st.markdown(f"<h1 style = 'text-align: center;'>Correlograms for differenced {regressand_str}</h1>", unsafe_allow_html = True)
-                            else:
-                                st.markdown(f"<h1 style = 'text-align: center;'>Correlograms for {regressand_str}</h1>", unsafe_allow_html = True)
+#                             # Correlograms for differenced data
+#                             # This is to see what number to submit as d
+#                             if arima_logs and take_difference2:
+#                                 st.markdown(f"<h1 style = 'text-align: center;'>Correlograms for differenced log {regressand_str}</h1>", unsafe_allow_html = True)
+#                             elif arima_logs:
+#                                 st.markdown(f"<h1 style = 'text-align: center;'>Correlograms for log {regressand_str}</h1>", unsafe_allow_html = True)
+#                             elif take_difference2:
+#                                 st.markdown(f"<h1 style = 'text-align: center;'>Correlograms for differenced {regressand_str}</h1>", unsafe_allow_html = True)
+#                             else:
+#                                 st.markdown(f"<h1 style = 'text-align: center;'>Correlograms for {regressand_str}</h1>", unsafe_allow_html = True)
 
-                            # Plotting ACF and PACF
-                            acf_pacf(series1 = in_sample_arima_y_diff, series2 =in_sample_arima_y_diff)
+#                             # Plotting ACF and PACF
+#                             acf_pacf(series1 = in_sample_arima_y_diff, series2 =in_sample_arima_y_diff)
 
-                            # Conducting Augmented Dickey Fuller test on the differenced log data
-                            st.markdown("<h1 style = 'text-align: center;'>Dickey fuller test on differenced data</h1>", unsafe_allow_html = True)
-                            adf_test_2 = adfuller(in_sample_arima_y_diff)
+#                             # Conducting Augmented Dickey Fuller test on the differenced log data
+#                             st.markdown("<h1 style = 'text-align: center;'>Dickey fuller test on differenced data</h1>", unsafe_allow_html = True)
+#                             adf_test_2 = adfuller(in_sample_arima_y_diff)
 
-                            if adf_test_2[1] > 0.05:
-                                st.write("")
-                                st.write(f"p value is **{round(adf_test_2[1], 3)}**. Hence, There is not enough information to reject Ho. \n**We have evidence of a unit root**.")
-                                st.write(f"**Data is not stationary**.")
-                            else:
-                                st.write("")
-                                st.write(f"p value is **{round(adf_test_2[1], 3)}**. Hence, we have enough evidence to reject Ho. \nThere is **no evidence of a unit root**.")
-                                st.write(f"**Data is stationary**.")
-                        st.markdown("---")
+#                             if adf_test_2[1] > 0.05:
+#                                 st.write("")
+#                                 st.write(f"p value is **{round(adf_test_2[1], 3)}**. Hence, There is not enough information to reject Ho. \n**We have evidence of a unit root**.")
+#                                 st.write(f"**Data is not stationary**.")
+#                             else:
+#                                 st.write("")
+#                                 st.write(f"p value is **{round(adf_test_2[1], 3)}**. Hence, we have enough evidence to reject Ho. \nThere is **no evidence of a unit root**.")
+#                                 st.write(f"**Data is stationary**.")
+#                         st.markdown("---")
 
-                        # Conducting a regression for the manual model
+#                         # Conducting a regression for the manual model
 
-                        st.markdown("<h1 style='text-align: center;'>Step 2: Estimation</h1>", unsafe_allow_html=True)
+#                         st.markdown("<h1 style='text-align: center;'>Step 2: Estimation</h1>", unsafe_allow_html=True)
 
-                        # Breaking the screen into three columnds and asking to submit three numbers
-                        col1, col2, col3  = st.columns(3)
-                        one = col1.number_input("First num?:", step = 1, min_value = 0)
-                        two = col2.number_input("Second num?:", step = 1, min_value = 0)
-                        three = col3.number_input("Third num?:", step = 1, min_value = 0)
+#                         # Breaking the screen into three columnds and asking to submit three numbers
+#                         col1, col2, col3  = st.columns(3)
+#                         one = col1.number_input("First num?:", step = 1, min_value = 0)
+#                         two = col2.number_input("Second num?:", step = 1, min_value = 0)
+#                         three = col3.number_input("Third num?:", step = 1, min_value = 0)
 
-                        # Fitting an ARIMA model
-                        if one == 0 and two == 0 and three == 0:
-                            st.write("Please, indicate your numbers for ARIMA guess")
-                            model_fit = None
+#                         # Fitting an ARIMA model
+#                         if one == 0 and two == 0 and three == 0:
+#                             st.write("Please, indicate your numbers for ARIMA guess")
+#                             model_fit = None
                             
-                        elif (one is not None) and (two is not None) and (three is not None):
-                            model = conduct_manual_arima(in_sample_arima_y = in_sample_arima_y,
-                                                        one = one, 
-                                                        two = two, 
-                                                        three = three)
+#                         elif (one is not None) and (two is not None) and (three is not None):
+#                             model = conduct_manual_arima(in_sample_arima_y = in_sample_arima_y,
+#                                                         one = one, 
+#                                                         two = two, 
+#                                                         three = three)
 
-                            model_fit = model.fit()
-                            st.write(model_fit.summary())   
-                            st.markdown("---")  
+#                             model_fit = model.fit()
+#                             st.write(model_fit.summary())   
+#                             st.markdown("---")  
 
-                            # Updating the sidebar to reflect on loaded data
-                            index_1 += 1
-                            st.sidebar.markdown(f"{index_1}. **Manual** ARIMA model of order **{one, two, three}** has been estimated.")                
+#                             # Updating the sidebar to reflect on loaded data
+#                             index_1 += 1
+#                             st.sidebar.markdown(f"{index_1}. **Manual** ARIMA model of order **{one, two, three}** has been estimated.")                
             
-                            # Retrieving fitted values and residuals
-                            fitted_values_manual_arima = model_fit.fittedvalues
-                            residuals_manual_arima = model_fit.resid
+#                             # Retrieving fitted values and residuals
+#                             fitted_values_manual_arima = model_fit.fittedvalues
+#                             residuals_manual_arima = model_fit.resid
 
-                        else:
-                            st.write("Please, indicate your numbers for ARIMA guess")
-                            st.markdown("---")
+#                         else:
+#                             st.write("Please, indicate your numbers for ARIMA guess")
+#                             st.markdown("---")
 
-                        # Plotting the residuals and their density function
-                        if model_fit:
-                            st.markdown("<h1 style = 'text-align: center;'>Plotting the residuals and density</h1>", unsafe_allow_html = True)
-                            fig4, residuals = resid_kde(_model_fit = model_fit)
-                            plt.tight_layout()
-                            st.pyplot(fig4)
-                            st.markdown("---")
+#                         # Plotting the residuals and their density function
+#                         if model_fit:
+#                             st.markdown("<h1 style = 'text-align: center;'>Plotting the residuals and density</h1>", unsafe_allow_html = True)
+#                             fig4, residuals = resid_kde(_model_fit = model_fit)
+#                             plt.tight_layout()
+#                             st.pyplot(fig4)
+#                             st.markdown("---")
 
-                            # Checking residuals for the presence of autocorrelation
-                            # Errors (residuals) must be a white noise ie must not have any autocorrelation
-                            st.markdown("<h1 style = 'text-align: center;'>Correlograms for residuals</h1>", unsafe_allow_html = True)
+#                             # Checking residuals for the presence of autocorrelation
+#                             # Errors (residuals) must be a white noise ie must not have any autocorrelation
+#                             st.markdown("<h1 style = 'text-align: center;'>Correlograms for residuals</h1>", unsafe_allow_html = True)
 
-                            # Plot ACF and PACF
-                            acf_pacf(series1 = residuals_manual_arima, series2 = residuals_manual_arima)
-                            st.markdown("---")
+#                             # Plot ACF and PACF
+#                             acf_pacf(series1 = residuals_manual_arima, series2 = residuals_manual_arima)
+#                             st.markdown("---")
 
-                            # Forecasting and plotting the forecast from the manual procedure
-                            st.markdown("<h1 style = 'text-align: center;'>Plotting manual forecasts</h1>", unsafe_allow_html = True)
-                            arima_manual_forecasts = model_fit.forecast(len(out_of_sample_arima_y))
+#                             # Forecasting and plotting the forecast from the manual procedure
+#                             st.markdown("<h1 style = 'text-align: center;'>Plotting manual forecasts</h1>", unsafe_allow_html = True)
+#                             arima_manual_forecasts = model_fit.forecast(len(out_of_sample_arima_y))
 
-                            arima_regressand["arima_manual_forecasts"] = [None]*len(in_sample_arima_y) + list(arima_manual_forecasts)
+#                             arima_regressand["arima_manual_forecasts"] = [None]*len(in_sample_arima_y) + list(arima_manual_forecasts)
                             
-                            # Plotting exercise
-                            if arima_logs:   
-                                label_name_3 = f"Log {regressand_str}"
-                            else:
-                                label_name_3 = f"{regressand_str}"
+#                             # Plotting exercise
+#                             if arima_logs:   
+#                                 label_name_3 = f"Log {regressand_str}"
+#                             else:
+#                                 label_name_3 = f"{regressand_str}"
 
-                            # Plotting exercise
-                            plotting_exercise(regressand = arima_regressand,
-                                      label_name = label_name_3,
-                                      dates_checkbox = dates_checkbox,
-                                      dates = dates)
+#                             # Plotting exercise
+#                             plotting_exercise(regressand = arima_regressand,
+#                                       label_name = label_name_3,
+#                                       dates_checkbox = dates_checkbox,
+#                                       dates = dates)
 
-                            st.markdown("---")
+#                             st.markdown("---")
 
-                            # Calculating the loss functions for manual ARIMA model 
+#                             # Calculating the loss functions for manual ARIMA model 
                             
-                            st.markdown("<h1 style = 'text-align: center;'>Statistical loss functions for manual ARIMA model</h1>", unsafe_allow_html = True)
-                            name2 = "Manual ARIMA model"
-                            theils_2 = theils_u(actual = out_of_sample_arima_y, forecast = arima_manual_forecasts)
-                            loss_functions_2 = loss_function(out_of_sample_data = out_of_sample_arima_y, forecasts = arima_manual_forecasts, column_name = name2, theil_number = theils_2)
-                            st.write(loss_functions_2)
-                            st.markdown("---")
+#                             st.markdown("<h1 style = 'text-align: center;'>Statistical loss functions for manual ARIMA model</h1>", unsafe_allow_html = True)
+#                             name2 = "Manual ARIMA model"
+#                             theils_2 = theils_u(actual = out_of_sample_arima_y, forecast = arima_manual_forecasts)
+#                             loss_functions_2 = loss_function(out_of_sample_data = out_of_sample_arima_y, forecasts = arima_manual_forecasts, column_name = name2, theil_number = theils_2)
+#                             st.write(loss_functions_2)
+#                             st.markdown("---")
 
-                            # Comparing all existing loss functions for all created forecasting models                         
+#                             # Comparing all existing loss functions for all created forecasting models                         
 
-                            list_of_loss_functions = []
-                            if "loss_functions_1" in globals():
-                                list_of_loss_functions.append(loss_functions_1)
-                            if "loss_functions_2" in globals():
-                                list_of_loss_functions.append(loss_functions_2)
-                            #if "loss_functions_3" in globals():
-                                #list_of_loss_functions.append(loss_functions_3)
-                            df = pd.DataFrame()
+#                             list_of_loss_functions = []
+#                             if "loss_functions_1" in globals():
+#                                 list_of_loss_functions.append(loss_functions_1)
+#                             if "loss_functions_2" in globals():
+#                                 list_of_loss_functions.append(loss_functions_2)
+#                             #if "loss_functions_3" in globals():
+#                                 #list_of_loss_functions.append(loss_functions_3)
+#                             df = pd.DataFrame()
 
-                            if len(list_of_loss_functions) > 1:
-                                if st.checkbox("Tick to compare the loss functions of all created forecasting models.", key = "1"):
-                                    st.markdown("<h1 style = 'text-align: center;'>Comparing all existing loss functions for all created forecasting models</h1>", unsafe_allow_html = True)
+#                             if len(list_of_loss_functions) > 1:
+#                                 if st.checkbox("Tick to compare the loss functions of all created forecasting models.", key = "1"):
+#                                     st.markdown("<h1 style = 'text-align: center;'>Comparing all existing loss functions for all created forecasting models</h1>", unsafe_allow_html = True)
                         
-                                    for i in list_of_loss_functions:
-                                        df = pd.concat([df, i], axis = 1)
-                                    styled_df = df.style.apply(color_code, axis=1)                                  
-                                    st.markdown(styled_df.to_html(), unsafe_allow_html=True)
-                st.markdown("---")              
+#                                     for i in list_of_loss_functions:
+#                                         df = pd.concat([df, i], axis = 1)
+#                                     styled_df = df.style.apply(color_code, axis=1)                                  
+#                                     st.markdown(styled_df.to_html(), unsafe_allow_html=True)
+#                 st.markdown("---")              
 
-# Automatic ARIMA           
-    if y_var:   
-        if allow_analysis:
-            do_automatic_arima = st.checkbox("Tick to create an automatic ARIMA model.")
-            if do_automatic_arima:
+# # Automatic ARIMA           
+#     if y_var:   
+#         if allow_analysis:
+#             do_automatic_arima = st.checkbox("Tick to create an automatic ARIMA model.")
+#             if do_automatic_arima:
 
-                # Making a comment in the sidebar
-                st.sidebar.markdown("---")
-                st.sidebar.markdown("<h1 style='text-align: center;'>ARIMA  Automatic Analysis</h1>", unsafe_allow_html=True)
+#                 # Making a comment in the sidebar
+#                 st.sidebar.markdown("---")
+#                 st.sidebar.markdown("<h1 style='text-align: center;'>ARIMA  Automatic Analysis</h1>", unsafe_allow_html=True)
             
-                # Retrieving the number of observations
-                auto_arima_previous_nobs = len(auto_arima_regressand)
+#                 # Retrieving the number of observations
+#                 auto_arima_previous_nobs = len(auto_arima_regressand)
 
-                # Plotting exercise
-                label_name_5 = f"{regressand_str}"
+#                 # Plotting exercise
+#                 label_name_5 = f"{regressand_str}"
 
-                # Plotting exercise # this is the one that messes everything up
-                st.markdown(f"<h1 style='text-align: center;'>Visual of {regressand_str}</h1>", unsafe_allow_html=True)
+#                 # Plotting exercise # this is the one that messes everything up
+#                 st.markdown(f"<h1 style='text-align: center;'>Visual of {regressand_str}</h1>", unsafe_allow_html=True)
 
-                plotting_exercise(regressand = auto_arima_regressand,
-                            label_name = label_name_5,
-                            dates_checkbox = dates_checkbox,
-                            dates = dates)                   
+#                 plotting_exercise(regressand = auto_arima_regressand,
+#                             label_name = label_name_5,
+#                             dates_checkbox = dates_checkbox,
+#                             dates = dates)                   
 
-                st.markdown("---")
+#                 st.markdown("---")
 
-                # An option to take logs
+#                 # An option to take logs
 
-                auto_arima_logs = st.checkbox(f"Tick to take **logs** of {regressand_str}.", key = "logs_3")
-                if auto_arima_logs:
+#                 auto_arima_logs = st.checkbox(f"Tick to take **logs** of {regressand_str}.", key = "logs_3")
+#                 if auto_arima_logs:
                     
-                    # Taking the actual logs
-                    auto_arima_regressand = np.log(auto_arima_regressand).copy()
+#                     # Taking the actual logs
+#                     auto_arima_regressand = np.log(auto_arima_regressand).copy()
 
-                    # Updating the sidebar to reflect on loaded data
-                    index_1 += 1
-                    st.sidebar.markdown(f"{index_1}. The **logs** of {regressand_str} have been taken.")
+#                     # Updating the sidebar to reflect on loaded data
+#                     index_1 += 1
+#                     st.sidebar.markdown(f"{index_1}. The **logs** of {regressand_str} have been taken.")
 
-                    # Ensuring the None values are gone
-                    has_missing_4 = auto_arima_regressand.isnull().values.any() # returns true of false
-                    if has_missing_4:
-                        auto_arima_regressand = auto_arima_regressand.dropna()
+#                     # Ensuring the None values are gone
+#                     has_missing_4 = auto_arima_regressand.isnull().values.any() # returns true of false
+#                     if has_missing_4:
+#                         auto_arima_regressand = auto_arima_regressand.dropna()
 
-                        # Resetting the index of the arima_regressand and getting the last index of the arima_regressand
-                        auto_arima_regressand = auto_arima_regressand.reset_index(drop=True)
+#                         # Resetting the index of the arima_regressand and getting the last index of the arima_regressand
+#                         auto_arima_regressand = auto_arima_regressand.reset_index(drop=True)
                         
-                        # Extracting the new number of observations IF there are Nones
-                        auto_arima_updated_nobs = len(auto_arima_regressand)
+#                         # Extracting the new number of observations IF there are Nones
+#                         auto_arima_updated_nobs = len(auto_arima_regressand)
 
-                        # Making a comment in the sidebar
-                        index_1 += 1
-                        st.sidebar.markdown(f"{index_1}. After taking logs, **{regressand_str}** had None values. They were excluded for the regression purposes.<br>The new number of observations is: **{auto_arima_updated_nobs} (old: {auto_arima_previous_nobs})**.", unsafe_allow_html=True)
-                    else:
-                        # Making a comment in the sidebar
-                        index_1 += 1
-                        st.sidebar.markdown(f"{index_1}. After taking logs, **{regressand_str}** had no None values.<br>The number of observations is still: **{auto_arima_previous_nobs})**.", unsafe_allow_html=True)
+#                         # Making a comment in the sidebar
+#                         index_1 += 1
+#                         st.sidebar.markdown(f"{index_1}. After taking logs, **{regressand_str}** had None values. They were excluded for the regression purposes.<br>The new number of observations is: **{auto_arima_updated_nobs} (old: {auto_arima_previous_nobs})**.", unsafe_allow_html=True)
+#                     else:
+#                         # Making a comment in the sidebar
+#                         index_1 += 1
+#                         st.sidebar.markdown(f"{index_1}. After taking logs, **{regressand_str}** had no None values.<br>The number of observations is still: **{auto_arima_previous_nobs})**.", unsafe_allow_html=True)
 
-                        # Extracting the new number of observations IF there are Nones
-                        auto_arima_updated_nobs = len(auto_arima_regressand)
+#                         # Extracting the new number of observations IF there are Nones
+#                         auto_arima_updated_nobs = len(auto_arima_regressand)
 
-                    st.markdown(f"<h1 style = 'text-align: center;'>Log {regressand_str}</h1>", unsafe_allow_html = True)    
+#                     st.markdown(f"<h1 style = 'text-align: center;'>Log {regressand_str}</h1>", unsafe_allow_html = True)    
                     
-                    # Plotting exercise
-                    label_name_6 = f"Log {regressand_str}"
-                    plotting_exercise(regressand = auto_arima_regressand,
-                                label_name = label_name_6,
-                                dates_checkbox = dates_checkbox,
-                                dates = dates)     
+#                     # Plotting exercise
+#                     label_name_6 = f"Log {regressand_str}"
+#                     plotting_exercise(regressand = auto_arima_regressand,
+#                                 label_name = label_name_6,
+#                                 dates_checkbox = dates_checkbox,
+#                                 dates = dates)     
 
-                st.markdown("---")
+#                 st.markdown("---")
         
-                # No need to take differences because, the automatic ARIMA will choose this degree itself
-                # Breaking the data into in sample and out of sample periods
-                third_forecast = st.checkbox("Tick to perform in sample and out of sample forecating ability of the model.", key = "auto arima split 1")
-                if third_forecast:
-                    st.write(f"**Please, note that this make take several minutes to complete.**")
+#                 # No need to take differences because, the automatic ARIMA will choose this degree itself
+#                 # Breaking the data into in sample and out of sample periods
+#                 third_forecast = st.checkbox("Tick to perform in sample and out of sample forecating ability of the model.", key = "auto arima split 1")
+#                 if third_forecast:
+#                     st.write(f"**Please, note that this make take several minutes to complete.**")
 
-                    auto_arima_in_sample_proportion = st.number_input("Proportion for in-sample data", step = 0.05, value = 0.7, key = "auto arima split 2")
+#                     auto_arima_in_sample_proportion = st.number_input("Proportion for in-sample data", step = 0.05, value = 0.7, key = "auto arima split 2")
                 
-                    if auto_arima_in_sample_proportion:
-                        if not "auto_arima_updated_nobs" in globals():
-                            auto_arima_updated_nobs = auto_arima_previous_nobs
+#                     if auto_arima_in_sample_proportion:
+#                         if not "auto_arima_updated_nobs" in globals():
+#                             auto_arima_updated_nobs = auto_arima_previous_nobs
                         
-                        out_of_sample_proportion_3 = 1 - auto_arima_in_sample_proportion
-                        auto_arima_in_sample_nobs = round(auto_arima_updated_nobs * auto_arima_in_sample_proportion) 
+#                         out_of_sample_proportion_3 = 1 - auto_arima_in_sample_proportion
+#                         auto_arima_in_sample_nobs = round(auto_arima_updated_nobs * auto_arima_in_sample_proportion) 
 
-                        # Updating the sidebar to reflect on loaded data
-                        index_1 += 1
-                        st.sidebar.markdown(f"{index_1}. The in sample proportion is selected at **{round(auto_arima_in_sample_proportion * 100)}%**. Out of sample proportion is selected at **{round(100 - auto_arima_in_sample_proportion * 100)}%**.", unsafe_allow_html=True) 
-                        index_1 += 1
-                        st.sidebar.markdown(f"{index_1}. The in sample number of observations is: **{auto_arima_in_sample_nobs} (before data splitting: {auto_arima_updated_nobs})**. The number of observations to forecast is: **{auto_arima_updated_nobs - auto_arima_in_sample_nobs}**.", unsafe_allow_html=True) 
+#                         # Updating the sidebar to reflect on loaded data
+#                         index_1 += 1
+#                         st.sidebar.markdown(f"{index_1}. The in sample proportion is selected at **{round(auto_arima_in_sample_proportion * 100)}%**. Out of sample proportion is selected at **{round(100 - auto_arima_in_sample_proportion * 100)}%**.", unsafe_allow_html=True) 
+#                         index_1 += 1
+#                         st.sidebar.markdown(f"{index_1}. The in sample number of observations is: **{auto_arima_in_sample_nobs} (before data splitting: {auto_arima_updated_nobs})**. The number of observations to forecast is: **{auto_arima_updated_nobs - auto_arima_in_sample_nobs}**.", unsafe_allow_html=True) 
 
-                        # Splitting the data into in sample and out of sample data
-                        in_sample_auto_arima_y, out_of_sample_auto_arima_y = auto_arima_regressand.iloc[:auto_arima_in_sample_nobs].copy(), auto_arima_regressand.iloc[auto_arima_in_sample_nobs:].copy()
+#                         # Splitting the data into in sample and out of sample data
+#                         in_sample_auto_arima_y, out_of_sample_auto_arima_y = auto_arima_regressand.iloc[:auto_arima_in_sample_nobs].copy(), auto_arima_regressand.iloc[auto_arima_in_sample_nobs:].copy()
 
 
-                        st.markdown("<h1 style = 'text-align: center;'>Automatic ARIMA regression results</h1>", unsafe_allow_html = True)    
-                        auto_arima = conduct_auto_arima(in_sample_auto_arima_y)
+#                         st.markdown("<h1 style = 'text-align: center;'>Automatic ARIMA regression results</h1>", unsafe_allow_html = True)    
+#                         auto_arima = conduct_auto_arima(in_sample_auto_arima_y)
 
-                        st.write(f"Automatic ARIMA model suggests that the model is: {auto_arima}")
-                        st.write(auto_arima.summary())
+#                         st.write(f"Automatic ARIMA model suggests that the model is: {auto_arima}")
+#                         st.write(auto_arima.summary())
 
-                        # Updating the activity log to say about the auto arima
-                        index_1 += 1
-                        st.sidebar.markdown(f"{index_1}. Automatic ARIMA model suggests that the model is: **{auto_arima.order}**.")
-                        st.markdown("---")
+#                         # Updating the activity log to say about the auto arima
+#                         index_1 += 1
+#                         st.sidebar.markdown(f"{index_1}. Automatic ARIMA model suggests that the model is: **{auto_arima.order}**.")
+#                         st.markdown("---")
 
-                        # Generating and plotting the results
-                        st.markdown("<h1 style = 'text-align: center;'>Plotting automatic forecasts</h1>", unsafe_allow_html = True)    
-                        arima_auto_forecasts = auto_arima.predict(n_periods = len(out_of_sample_auto_arima_y))
-                        auto_arima_regressand["arima_auto_forecasts"] = [None] * len(in_sample_auto_arima_y) + list(arima_auto_forecasts)
+#                         # Generating and plotting the results
+#                         st.markdown("<h1 style = 'text-align: center;'>Plotting automatic forecasts</h1>", unsafe_allow_html = True)    
+#                         arima_auto_forecasts = auto_arima.predict(n_periods = len(out_of_sample_auto_arima_y))
+#                         auto_arima_regressand["arima_auto_forecasts"] = [None] * len(in_sample_auto_arima_y) + list(arima_auto_forecasts)
                 
-                        # Plotting exercise
-                        if auto_arima_logs:   
-                            label_name_7 = f"Log {regressand_str}"
-                        else:
-                            label_name_7 = f"{regressand_str}"
+#                         # Plotting exercise
+#                         if auto_arima_logs:   
+#                             label_name_7 = f"Log {regressand_str}"
+#                         else:
+#                             label_name_7 = f"{regressand_str}"
 
-                        # Plotting exercise
-                        plotting_exercise(regressand = auto_arima_regressand,
-                                            label_name = label_name_7,
-                                            dates_checkbox = dates_checkbox,
-                                            dates = dates)
+#                         # Plotting exercise
+#                         plotting_exercise(regressand = auto_arima_regressand,
+#                                             label_name = label_name_7,
+#                                             dates_checkbox = dates_checkbox,
+#                                             dates = dates)
 
-                    st.markdown("---")
+#                     st.markdown("---")
 
-                    # Calculating the loss functions for manual ARIMA model                         
-                    st.markdown("<h1 style = 'text-align: center;'>Statistical loss functions for manual ARIMA model</h1>", unsafe_allow_html = True)
-                    name2 = "Automatic ARIMA model"
-                    theils_2 = theils_u(actual = out_of_sample_auto_arima_y, forecast = arima_auto_forecasts)
-                    loss_functions_3 = loss_function(out_of_sample_data = out_of_sample_auto_arima_y, 
-                                                        forecasts = arima_auto_forecasts, 
-                                                        column_name = name2, 
-                                                        theil_number = theils_2)
-                    st.write(loss_functions_3)
-                    st.markdown("---")
+#                     # Calculating the loss functions for manual ARIMA model                         
+#                     st.markdown("<h1 style = 'text-align: center;'>Statistical loss functions for manual ARIMA model</h1>", unsafe_allow_html = True)
+#                     name2 = "Automatic ARIMA model"
+#                     theils_2 = theils_u(actual = out_of_sample_auto_arima_y, forecast = arima_auto_forecasts)
+#                     loss_functions_3 = loss_function(out_of_sample_data = out_of_sample_auto_arima_y, 
+#                                                         forecasts = arima_auto_forecasts, 
+#                                                         column_name = name2, 
+#                                                         theil_number = theils_2)
+#                     st.write(loss_functions_3)
+#                     st.markdown("---")
 
-                    # Comparing all existing loss functions for all created forecasting models 
+#                     # Comparing all existing loss functions for all created forecasting models 
 
-                    list_of_loss_functions = []
-                    if "loss_functions_1" in globals():
-                        list_of_loss_functions.append(loss_functions_1)
-                    if "loss_functions_2" in globals():
-                        list_of_loss_functions.append(loss_functions_2)
-                    if "loss_functions_3" in globals():
-                        list_of_loss_functions.append(loss_functions_3)
-                    df = pd.DataFrame()
+#                     list_of_loss_functions = []
+#                     if "loss_functions_1" in globals():
+#                         list_of_loss_functions.append(loss_functions_1)
+#                     if "loss_functions_2" in globals():
+#                         list_of_loss_functions.append(loss_functions_2)
+#                     if "loss_functions_3" in globals():
+#                         list_of_loss_functions.append(loss_functions_3)
+#                     df = pd.DataFrame()
 
-                    if len(list_of_loss_functions) > 1:
-                        if st.checkbox("Tick to compare the loss functions of all created forecasting models.", key = "2"):
-                            st.markdown("<h1 style = 'text-align: center;'>Comparing all existing loss functions for all created forecasting models</h1>", unsafe_allow_html = True)
+#                     if len(list_of_loss_functions) > 1:
+#                         if st.checkbox("Tick to compare the loss functions of all created forecasting models.", key = "2"):
+#                             st.markdown("<h1 style = 'text-align: center;'>Comparing all existing loss functions for all created forecasting models</h1>", unsafe_allow_html = True)
                 
-                            for i in list_of_loss_functions:
-                                df = pd.concat([df, i], axis = 1)
-                            styled_df = df.style.apply(color_code, axis=1)                                  
-                            st.markdown(styled_df.to_html(), unsafe_allow_html=True)
-                            st.markdown("---")
+#                             for i in list_of_loss_functions:
+#                                 df = pd.concat([df, i], axis = 1)
+#                             styled_df = df.style.apply(color_code, axis=1)                                  
+#                             st.markdown(styled_df.to_html(), unsafe_allow_html=True)
+#                             st.markdown("---")
