@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.arima.model import ARIMA
-#import pmdarima as pm
+import pmdarima as pm
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, mean_squared_error
 import itertools
 import statsmodels.api as sm
