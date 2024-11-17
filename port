@@ -1,0 +1,755 @@
+# needed functionality
+#    plotting an efficient frontier and allowing user to select a porfolio that he wants
+# 6. ensuring all the errors are solved "try ... except"
+
+
+# when loading the fama french factors, must take the start and end dates and filter out accordingly
+#need to solve the errors when the dates are the same or when the end date is greater than the start date
+# in this part "errors='coerce'" need to actually check if there are any NaT values and then take correcting actions if any
+# have to make an addition where if there has been done any interpolation, then i have to make a note in the sidebar
+# add functionality where i can write a set of weights for every stock and regress it on some variables
+# need to add rebalacing bit
+# add a function that calculates how much cash i would generate if i invested this amount in some back year
+# make a note that the returns are teh expected returns
+# also state the assumption that the returns are the average returns for the last periods
+# make a warning if some of the date parts is not initiliased
+# when making a regression. i MAY delete some observations of the returns, if the 
+#   date column is not the same as the date column of the fama french variable
+# need a warning when risk free rate is greater than the majority of the returns
+#   which may later cause an error
+# in the capital market line plotting, need to adjust the offsets so that they are flexible depending on how many stocks I use
+# need a way to clear the cashe becasue other way the memory of the laptop gets wasted pretty quickly
+# need to think about the dates. can be i need just months or years? actually you just write 1!!so if
+# in the efficient set function, need to add a way to calcualte weights, and risk for a specific return that the user wants
+# is there a way to create weights (that may change) that creates a return that follows a normal distribution
+# Maybe add a function to download the fama french 5 factors instead of 3
+# need to automate reports for this and for the previous app
+
+
+import plotly.graph_objects as go
+import yfinance as yf
+import streamlit as st
+import numpy as np
+import pandas as pd
+import itertools
+import matplotlib.pyplot as plt
+import requests
+import zipfile
+from io import BytesIO
+import statsmodels.api as sm
+
+# Name of the page, wide layout and the picture on the DONE
+st.set_page_config(
+    page_title = "1Portfolio Analysis ",
+    page_icon = ":chart_with_upwards_trend",
+    layout="wide")
+
+# Defining a function to split the string of the stock names DONE
+@st.cache_resource
+def split_string(input_string):
+    # Remove commas
+    cleaned_string = input_string.replace(',', '')
+
+    # Split the cleaned string by spaces and filter out any empty strings
+    separated_string = cleaned_string.split()
+
+    # Return the list of separate words
+    return separated_string
+
+# Defining a function to draw the efficient frontier DONE
+@st.cache_resource
+def efficient_front(stock_data, rf_rate):
+
+    # Taking the percentage change from the stock prices
+    stock_data = stock_data.pct_change().copy()
+    stock_data = stock_data.dropna().copy()
+
+    # Multiply the returns by 100 to get pct points
+    stock_data = stock_data * 100
+
+    # Step for making the changes in weights
+    step = 0.05
+
+    # Loading data
+    #np.random.seed(1)
+    #stock_data = pd.read_excel("C:/Users/WadeWilson1/sublime_games/0_invest_strategies/EasyRegress_v2/CW/stock_data.xlsx")
+
+    # Extracting the number of stocks
+    n_of_stocks = stock_data.shape[1]
+
+    # Get the column names (assuming stock_data has named columns)
+    stock_names = stock_data.columns
+
+    # Define the possible weights
+    possible_weights = [round(i * step, 2) for i in range(round(1/step) + 1)]  # From 0.0 to 1.0 in steps of 0.1
+
+    # Generate all possible combinations of weights (three assets)
+    combinations = list(itertools.product(possible_weights, repeat=n_of_stocks))
+
+    # Filter combinations where the sum of weights equals 1
+    valid_combinations = [combo for combo in combinations if sum(combo) == 1.0]
+
+    # Convert to a Numpy for faster working for better display
+    weights = np.array(valid_combinations)
+
+    # Covariance matrix
+    cov_matrix = np.cov(stock_data, rowvar=False)
+
+    # Calculating the mean returns 
+    expected_mean_returns = np.mean(stock_data, axis=0)
+
+    # Compute standard deviations from the diagonal of the covariance matrix
+    expected_stock_volatilities = np.sqrt(np.diag(cov_matrix))
+
+    returns_array = []
+    volatility_array = []
+    excess_return_array = []
+    sharpe_ratio_array = []
+
+    for i in range(len(weights)):
+
+        # Calculate portfolio volatility: w^T * Cov * w
+        port_volatility = np.sqrt((weights[i,] @ cov_matrix) @ weights[i,])
+
+        # Appending the volatility into the list
+        volatility_array.append(port_volatility)
+
+        # Calculate portfolio return
+        port_return = weights[i, :] @ expected_mean_returns
+
+        # Appending the return into the list
+        returns_array.append(port_return)
+        
+        # Calculating the excess return
+        exc_return = port_return - rf_rate
+
+        # Appending the return into the list
+        excess_return_array.append(exc_return)
+
+        # Sharpe ratio
+        sharpe = exc_return / port_volatility
+
+        # Appending the sharpe 
+        sharpe_ratio_array.append(sharpe)
+
+    # Getting the extreme numbers
+    largest_return = max(returns_array)
+    smallest_return = min(returns_array)
+    largest_volatility = max(volatility_array)
+    smallest_volatility = min(volatility_array)
+
+    # Getting the portfolio S (greatest sharpe)
+    index_of_largest_sr = np.argmax(sharpe_ratio_array)
+    s_port_return = returns_array[index_of_largest_sr]
+    s_port_volatility = volatility_array[index_of_largest_sr]
+    s_port_weights = weights[index_of_largest_sr]
+
+    # Getting the portfolio M (lowest variance)
+    index_of_lowest_risk = np.argmin(volatility_array)
+    m_port_return = returns_array[index_of_lowest_risk]
+    m_port_volatility = volatility_array[index_of_lowest_risk]
+    m_port_weights = weights[index_of_lowest_risk]
+
+
+    # Create a scatter plot
+    fig1, ax = plt.subplots(figsize = (8, 6)) 
+
+
+    # Add titles and labels
+    plt.title('Efficient Frontier')
+    plt.xlabel('Volatility (Risk) [%]')
+    plt.ylabel('Return [%]')
+
+    # Colour coding
+    colour_blue = (2/255, 136/255, 209/255)
+    colour_orange = (255/255, 111/255, 0/255)
+    colour_yellow = (254/255, 191/255, 0/255)
+
+    # Create a scatter plot
+    plt.scatter(volatility_array, returns_array, s = 5, c = colour_blue, marker = '.', label = "Possible portfolios", zorder = 2)
+
+    # Get axis limits
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+
+    # Calculate offsets as a percentage of the axis limits
+    x_offsett = 0.2 * (xlim[1] - xlim[0])  # 10% of the width of the x-axis
+    y_offsett = 0.2 * (ylim[1] - ylim[0])  # 10% of the height of the y-axis
+
+   # Calculate offsets as a percentage of the axis limits
+    x_offsett_label = (xlim[1] - xlim[0]) / 16
+    y_offsett_label = (ylim[1] - ylim[0]) / 16 
+
+    # Set x and y axis limits with padding
+    plt.xlim(smallest_volatility - x_offsett, largest_volatility + x_offsett)  # Set the x-axis range (for volatility) 
+    plt.ylim(smallest_return - y_offsett, largest_return + y_offsett)  # Set the y-axis range (for returns) 
+    
+
+    # Scatter plot for individual stocks
+    plt.scatter(expected_stock_volatilities, expected_mean_returns, s = 50, c = 'red', marker = 'o', label = "Individual Stocks", edgecolors=colour_blue, zorder = 3)
+
+    # Offsets for plotting
+    #x_offset = 0.02  # Offset for horizontal position (for stock names) # this one can delete
+    #y_offset = 0.005  # Offset for vertical position (for stock names) # this one can delete
+
+    # Add labels (stock names) next to each point, positioned above the circles
+    for i in range(len(stock_names)):
+        plt.annotate(stock_names[i], 
+        xy=(expected_stock_volatilities[i], expected_mean_returns[i]),  # Original point
+        xytext=(expected_stock_volatilities[i], expected_mean_returns[i] + y_offsett_label),  # Offset for label
+        fontsize=9, ha='center', va='bottom',
+        bbox=dict(facecolor="red", edgecolor=colour_blue, boxstyle='round,pad=0.3'),
+        arrowprops=dict(arrowstyle="-", color='grey', lw=0.5))  # Arrow pointing to the point
+
+    # Scatter plot for Portfolio S
+    plt.scatter(s_port_volatility, s_port_return, s = 50, c = colour_orange, marker = 'o', label = "Portfolio S", edgecolors=colour_blue, zorder = 5)
+    plt.annotate("Portfolio S", 
+        xy=(s_port_volatility, s_port_return),  # Original point
+        xytext=(s_port_volatility, s_port_return + y_offsett_label),  # Offset for label
+        fontsize=9, ha='right', va='baseline',
+        bbox=dict(facecolor=colour_orange, edgecolor=colour_blue, boxstyle='round,pad=0.3'),
+        arrowprops=dict(arrowstyle="-", color='grey', lw=0.5), zorder = 5)  # Arrow pointing to the point
+
+    # Scatter plot for Portfolio M
+    plt.scatter(m_port_volatility, m_port_return, s = 50, c = colour_yellow, marker = 'o', label = "Portfolio M", edgecolors=colour_blue, zorder = 6)
+    plt.annotate("Portfolio M", 
+        xy=(m_port_volatility, m_port_return),  # Original point
+        xytext=(m_port_volatility - x_offsett_label, m_port_return),  # Offset for label
+        fontsize=9, ha='right', va='baseline',
+        bbox=dict(facecolor=colour_yellow, edgecolor=colour_blue, boxstyle='round,pad=0.3'),
+        arrowprops=dict(arrowstyle="-", color='grey', lw=0.5), zorder = 6)  # Arrow pointing to the point
+
+
+    # Adding a legend
+    plt.legend(loc='best', fontsize=10)
+
+    # Show the plot
+    plt.grid(True, zorder = 1)
+
+    # Show the plot
+    st.pyplot(fig1)
+
+    n = len(weights)
+    expected_mean_returns = np.array(expected_mean_returns)
+
+    return (cov_matrix, s_port_volatility, s_port_return, m_port_volatility, m_port_return, expected_mean_returns, 
+            expected_stock_volatilities, s_port_volatility, expected_mean_returns, stock_data, m_port_weights, 
+            s_port_weights, weights, n, largest_return, smallest_return, largest_volatility, smallest_volatility, 
+            returns_array, volatility_array, excess_return_array, sharpe_ratio_array)
+
+# Defining a function to calculate portfolio returns DONE
+@st.cache_resource 
+def calc_port_rets(weights, stock_data):
+    portfolio_returns = []
+    for i in range(len(stock_data)):
+        port_ret = stock_data.iloc[i, :] @ weights
+        portfolio_returns.append(port_ret)
+    
+    portfolio_returns = pd.Series(portfolio_returns)
+    portfolio_returns.index = stock_data.index
+
+    return portfolio_returns
+
+# Defining a function to run simple OLS DONE 
+@st.cache_resource 
+def simple_ols(regressand, regressors):
+    regressors = sm.add_constant(regressors)
+    model = sm.OLS(regressand, regressors)
+    results = model.fit()
+    return results, model
+
+# Defining a function to download Fama-French DONE
+@st.cache_resource 
+def download_fama_french_factors_from_website(interval_key, start_date, end_date):
+    if interval_key == 1: # Daily
+        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_daily_CSV.zip"
+    elif interval_key == 2: # Weekly
+        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_weekly_CSV.zip"
+    else: # Monthly
+        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip"
+    response = requests.get(url)
+    
+    # Unzipping the file
+    with zipfile.ZipFile(BytesIO(response.content)) as z:
+        with z.open(z.namelist()[0]) as f:
+            fama_french_data = pd.read_csv(f, skiprows=3)  # Skip metadata rows
+    
+    # Specify the value to check in the first column
+    specific_value_1 = " Annual Factors: January-December " 
+    specific_value_2 = "Copyright 2024 Kenneth R. French"
+
+    # Find the index of the first row where the first column (A) has the specific value
+    row_index_1 = fama_french_data[fama_french_data.iloc[: ,0] == specific_value_1].index
+    row_index_2 = fama_french_data[fama_french_data.iloc[: ,0] == specific_value_2].index
+
+    # If there's a row with the specific value, slice the DataFrame to remove all rows below
+    if not row_index_1.empty:
+        fama_french_data = fama_french_data[:row_index_1[0]] 
+
+    # If there's a row with the specific value, slice the DataFrame to remove all rows below
+    if not row_index_2.empty:
+        fama_french_data = fama_french_data[:row_index_2[0]] 
+
+    # Converting dates
+    if interval_key == 1: # Daily
+        fama_french_data.iloc[:, 0] = pd.to_datetime(fama_french_data.iloc[:, 0], format='%Y%m%d', errors='coerce')
+    elif interval_key == 2: # Weekly
+        fama_french_data.iloc[:, 0] = pd.to_datetime(fama_french_data.iloc[:, 0], format='%Y%m%d', errors='coerce')
+    else: # Monthly
+        fama_french_data.iloc[:, 0] = pd.to_datetime(fama_french_data.iloc[:, 0], format='%Y%m', errors='coerce')
+
+    # Set the first column as the index
+    fama_french_data = fama_french_data.set_index(fama_french_data.columns[0])
+
+    # Changing the date format
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+
+
+
+    # Find the closest dates to the start_date and end_date if they don't exist
+    if start_date not in fama_french_data.index:
+        closest_start = fama_french_data.index.searchsorted(start_date, side="left")
+        if closest_start >= len(fama_french_data.index):  # In case the start_date is beyond the data range
+            closest_start = len(fama_french_data.index) - 1
+        start_date = fama_french_data.index[closest_start]
+
+    if end_date not in fama_french_data.index:
+        closest_end = fama_french_data.index.searchsorted(end_date, side="right") - 1
+        if closest_end < 0:  # In case the end_date is before the data range
+            closest_end = 0
+        end_date = fama_french_data.index[closest_end]
+
+    # Selecting a subset between the adjusted start and end date
+    fama_french_data = fama_french_data.loc[start_date:end_date]
+    fama_french_data = fama_french_data.apply(pd.to_numeric, errors='coerce')
+
+    # Inform the user if the dates were adjusted
+    st.info(f"Closest available dates selected: {start_date} to {end_date}")
+
+    return fama_french_data
+
+
+
+
+
+
+
+
+# Defining a function to plot capital investment line
+@st.cache_resource 
+def capital_investment_line(hypot_returns, hypot_weights, hypot_sds,
+                            stock_names, rf_rate, sharpe_ratio_array, largest_volatility, 
+                            s_port_volatility, s_port_return, m_port_volatility, m_port_return, 
+                            expected_mean_returns, expected_stock_volatilities):
+    
+    # Estimating the slope
+    slope = max(sharpe_ratio_array)
+
+    # Generating values for x (standard deviation) for the straight line
+    x = np.linspace(0, largest_volatility, 500)
+
+    # Generating the y (returns) for the straight line
+    y = slope * x + rf_rate
+
+    # Colour coding
+    colour_blue = (2/255, 136/255, 209/255)
+    colour_orange = (255/255, 111/255, 0/255)
+    colour_yellow = (254/255, 191/255, 0/255)
+    colour_green = (3/255, 78/255, 65/255)
+
+    # Create a scatter plot
+    fig2, ax = plt.subplots(figsize = (8, 6)) # this is the new one
+
+    # Plotting the main scatter plot
+    plt.scatter(volatility_array, returns_array, s = 5, c = colour_blue, marker = '.', label = "Possible Portfolios", zorder = 2)
+
+    # Plotting the efficient set
+    plt.scatter(hypot_sds, hypot_returns, s = 10, c = colour_green, marker = '.', label = "Efficient Set", zorder = 3)
+
+    # Plot the line
+    #plt.scatter(x, y, s = 5, c = 'black', marker = 'x', label = f"Capital Market Line [y = {round(slope, 2)}x + {round(rf_rate, 2)}]")
+    plt.plot(x, y, color=colour_blue, linewidth=1, label=f"Capital Market Line", zorder = 2)
+
+    # Scatter plot for individual stocks
+    plt.scatter(expected_stock_volatilities, expected_mean_returns, s = 50, c = 'red', marker = 'o', label = "Individual Stocks", edgecolors=colour_blue, zorder = 3)
+
+    # Get axis limits
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+
+    # Calculate offsets as a percentage of the axis limits
+    x_offsett = 0.2 * (xlim[1] - xlim[0])  # 10% of the width of the x-axis
+    y_offsett = 0.2 * (ylim[1] - ylim[0])  # 10% of the height of the y-axis
+
+   # Calculate offsets as a percentage of the axis limits
+    x_offsett_label = (xlim[1] - xlim[0]) / 16
+    y_offsett_label = (ylim[1] - ylim[0]) / 16 
+
+
+    # Set x and y axis limits with padding
+    plt.xlim(-(x_offsett / 4), largest_volatility + x_offsett)  # Set the x-axis range (for volatility) 
+    plt.ylim(-(y_offsett / 4), largest_return + y_offsett)  # Set the y-axis range (for returns) 
+    
+
+    # Add labels (stock names) next to each point, positioned above the circles
+    for i in range(len(stock_names)):
+        plt.annotate(stock_names[i], 
+        xy=(expected_stock_volatilities[i], expected_mean_returns[i]),  # Original point
+        xytext=(expected_stock_volatilities[i], expected_mean_returns[i] + y_offsett_label),  # Offset for label
+        fontsize=9, ha='center', va='bottom',
+        bbox=dict(facecolor="red", edgecolor=colour_blue, boxstyle='round,pad=0.3'),
+        arrowprops=dict(arrowstyle="-", color='gray', lw=0.5))  # Arrow pointing to the point
+        #plt.text(expected_stock_volatilities[i] + x_offset, expected_mean_returns[i] + y_offsett_label, stock_names[i], fontsize = 9, ha = 'center', va = 'bottom', 
+        #         color = 'black', bbox = dict(facecolor = 'red', edgecolor = 'red', boxstyle = 'round,pad = 0.3')))
+
+    # Scatter plot for Portfolio S
+    plt.scatter(s_port_volatility, s_port_return, s = 50, c = colour_orange, marker = 'o', label = "Portfolio S", edgecolors=colour_blue, zorder = 5)
+    plt.annotate("Portfolio S", 
+        xy=(s_port_volatility, s_port_return),  # Original point
+        xytext=(s_port_volatility, s_port_return + y_offsett_label),  # Offset for label
+        fontsize=9, ha='right', va='baseline',
+        bbox=dict(facecolor=colour_orange, edgecolor=colour_blue, boxstyle='round,pad=0.3'),
+        arrowprops=dict(arrowstyle="-", color='gray', lw=0.5), zorder = 5)  # Arrow pointing to the point
+    # plt.text(s_port_volatility, s_port_return + y_offsett_label, s = "Portfolio S", fontsize = 9, ha = 'right', va = 'baseline', 
+    #         color = 'black', bbox = dict(facecolor = colour_orange, edgecolor = colour, boxstyle = 'round,pad = 0.3'))    
+
+    # Scatter plot for Portfolio M
+    plt.scatter(m_port_volatility, m_port_return, s = 50, c = colour_yellow, marker = 'o', label = "Portfolio M", edgecolors=colour_blue, zorder = 6)
+    plt.annotate("Portfolio M", 
+        xy=(m_port_volatility, m_port_return),  # Original point
+        xytext=(m_port_volatility - x_offsett_label, m_port_return),  # Offset for label
+        fontsize=9, ha='right', va='baseline',
+        bbox=dict(facecolor=colour_yellow, edgecolor=colour_blue, boxstyle='round,pad=0.3'),
+        arrowprops=dict(arrowstyle="-", color='gray', lw=0.5), zorder = 6)  # Arrow pointing to the point
+    # plt.text(m_port_volatility, m_port_return + y_offsett_label, s = "Portfolio M", fontsize = 9, ha = 'right', va = 'baseline',  
+    #         color = 'black', bbox = dict(facecolor = 'orange', edgecolor = colour, boxstyle = 'round,pad = 0.3'))
+
+    # Scatter plot for the Risk Free asset
+    plt.scatter(0, rf_rate, s = 50, c = colour_orange, marker = 'o', label = "Risk Free Asset", edgecolors=colour_blue, zorder = 6)
+    plt.annotate("Risk Free asset", 
+        xy=(0, rf_rate),  # Original point
+        xytext=(x_offsett_label * 5, y_offsett_label),  # Offset for label
+        fontsize=9, ha='right', va='baseline',
+        bbox=dict(facecolor=colour_orange, edgecolor=colour_blue, boxstyle='round,pad=0.3'),
+        arrowprops=dict(arrowstyle="-", color='gray', lw=0.5), zorder = 6)  # Arrow pointing to the point
+    # plt.text(m_port_volatility, m_port_return + y_offsett_label, s = "Portfolio M", fontsize = 9, ha = 'right', va = 'baseline',  
+    #         color = 'black', bbox = dict(facecolor = 'orange', edgecolor = colour, boxstyle = 'round,pad = 0.3'))
+
+
+
+
+
+
+
+    # Add titles and labels
+    plt.title('Efficient Frontier')
+    plt.xlabel('Volatility (Risk) [%]')
+    plt.ylabel('Return [%]')
+
+    # Adding a legend
+    plt.legend(loc='best', fontsize=10)
+
+    # Show the plot
+    plt.grid(True, zorder = 1)
+
+    # Show the plot
+    st.pyplot(fig2)
+
+# Defining a function to plot efficient set
+@st.cache_resource 
+def efficient_set(mean_returns, cov_matrix, stock_dataframe, returns_array, return_goal = None):
+
+    # Extracting the maximum value from the returns
+    max_return = max(returns_array)
+
+    vector_of_ones = np.ones(stock_dataframe.shape[1])
+
+    a = vector_of_ones @ np.linalg.inv(cov_matrix) @ mean_returns
+    b = mean_returns @ np.linalg.inv(cov_matrix) @ mean_returns
+    f = vector_of_ones @ np.linalg.inv(cov_matrix) @ vector_of_ones
+    d = b * f - a ** 2
+    alpha_0 = (1 / d) * (b * np.linalg.inv(cov_matrix) @ vector_of_ones - a * np.linalg.inv(cov_matrix) @ mean_returns)
+    alpha_1 = (1 / d) * (f * np.linalg.inv(cov_matrix) @ mean_returns - a * np.linalg.inv(cov_matrix) @ vector_of_ones)
+
+    if return_goal:
+        W = alpha_0 + alpha_1 * return_goal
+
+    hypot_returns = np.linspace(0,max_return * 1.2, 251)
+    hypot_weights = []
+    hypot_sds = []
+    for i in range(len(hypot_returns)):
+        w = alpha_0 + alpha_1 * hypot_returns[i]
+        hypot_weights.append(w) 
+        sd = np.sqrt( w @ cov_matrix @ w )
+        hypot_sds.append(sd)
+
+    return hypot_returns, hypot_weights, hypot_sds
+
+
+
+
+
+
+# The Main Section --------------------------------------------------------------------------------------------------------------------------------------------------
+
+st.markdown("<h1 style='text-align: center;'>Portfolio Analysis</h1>", unsafe_allow_html=True)
+st.markdown("---")
+
+# Adding stock names in the sidebar ------------------------------------------------------------------------------------------------------------------------------------------
+with st.sidebar:
+    st.header("Data configuration")
+    data_options = "Yahoo data search", "Data upload"
+    data_option = st.selectbox("Select the data configuration type:", options = data_options)
+    if data_option == "Data upload":
+        uploaded_file = st.file_uploader("Choose a file")
+    else:
+        ticker_symbols = st.text_input("Write stock names from Yahoo separated by a space only.")
+
+# Choosing stocks to load ------------------------------------------------------------------------------------------------------------------------------------------------------
+if ticker_symbols:
+
+    # Defining a risk free rate
+    rf_rate = 0.0001
+
+    # Splitting the chosen stocks into separate stocks
+    stock_names = split_string(ticker_symbols)  
+
+    # Defining start dates
+    col1, col2, col3  = st.columns(3) #start='2010-12-31'
+    start_day = col1.number_input("Start day:", step = 1, min_value = 1, max_value = 31, key = "start_day")
+    start_month = col2.number_input("Start month:", step = 1, min_value = 1, max_value = 12, key = "start_month")
+    start_year = col3.number_input("Start year:", step = 1, min_value = 1900, max_value = 2024, key = "start_year")
+    start_date = str(f"{start_year}-{start_month}-{start_day}")
+
+    # Defining end dates
+    col1, col2, col3  = st.columns(3) #end='2020-12-31'
+    end_day = col1.number_input("End day:", step = 1, min_value = 1, max_value = 31, key = "end_day")
+    end_month = col2.number_input("End month:", step = 1, min_value = 1, max_value = 12, key = "end_month")
+    end_year = col3.number_input("End year:", step = 1, min_value = 1900, max_value = 2024, key = "end_year")
+    end_date = str(f"{end_year}-{end_month}-{end_day}")
+
+    interval_options = ["Daily", "Weekly", "Monthly"]
+    interval = st.selectbox("Select your interval.", options = interval_options)
+    if interval == "Daily":
+        interval_key = 1
+        yh_interval = "1d"
+    elif interval == "Weekly":
+        interval_key = 2
+        yh_interval = "1wk"
+    else: # Monthly
+        interval_key = 3
+        yh_interval = "1mo"
+
+    list_of_stocks = []
+    list_of_options = ["Open", "High", "Low", "Close", "Adj Close"]
+
+    stock_type = st.selectbox("Please, choose a type of info you would like to use", options = list_of_options)
+
+    st.markdown("---")
+
+
+    portfolio_analysis = st.checkbox("Tick to start portfolio analysis.")
+    if portfolio_analysis:
+        stocks_dataframe = pd.DataFrame()
+        
+        for stock_name in stock_names:
+            try:
+                # To include the end date, add one day
+                end_date_inclusive = pd.to_datetime(end_date) + pd.DateOffset(days=1)
+
+                stock_data = yf.download(stock_name, start = start_date, end = end_date_inclusive, interval = yh_interval)
+                stock_data_type = stock_data[[stock_type]]
+
+                # Interpolating missing values
+                stock_data_type = stock_data_type.interpolate(method='time', limit_direction='forward', axis=0)
+
+                # Rename the column to include the stock name (e.g., "AAPL Low")
+                stock_data_type.columns = [f"{stock_name} {stock_type}"]
+
+                stocks_dataframe = pd.concat([stocks_dataframe, stock_data_type], axis=1)
+            except Exception as e:
+                st.warning(f"Could not load data for {stock_name}: {e}")
+
+        stocks_dataframe = stocks_dataframe.interpolate(method='time', limit_direction='forward', axis=0)
+        
+        # An option to show the dataframe with the chosen stocks
+
+        with st.expander("Data preview"):
+            st.dataframe(stocks_dataframe)
+            st.write(f"There are {len(stocks_dataframe)} observations of data.")
+  
+
+
+        # Renaming the columns for the dataframe
+        stocks_dataframe.columns = stock_names
+        
+        st.markdown("---")
+
+
+
+        # Printing the efficient frontier with an appropriate weights
+        st.markdown("<h1 style='text-align: center;'>Efficient Frontier</h1>", unsafe_allow_html=True)
+        st.info(f"The returns have been generated from the stock prices of **{', '.join(stock_names)}** for the period of **{start_date}** to **{end_date}**.")      
+
+        # Breaking the screen into two columns with 2:1 proportion
+        top_left_column, top_right_column = st.columns((2, 1))
+
+        # Printing the efficient frontier on the top left
+        with top_left_column:
+            cov_matrix, s_port_volatility, s_port_return, m_port_volatility, m_port_return, expected_mean_returns, \
+            expected_stock_volatilities, s_port_volatility, expected_mean_returns, stock_data, m_port_weights, \
+            s_port_weights, weights, n, largest_return, smallest_return, largest_volatility, smallest_volatility, \
+            returns_array, volatility_array, excess_return_array, sharpe_ratio_array = efficient_front(
+                stock_data = stocks_dataframe,  
+                rf_rate = rf_rate)
+            
+            
+        # Printing the weights and how many portfolios were ther on the top left
+        with top_right_column:
+            st.markdown("<h3 style='text-align: center;'>Special portfolio details</h3>", unsafe_allow_html=True)
+            st.write(f"There are **{len(returns_array):,}** portfolio combinations based on which the below insights are created.") 
+            st.markdown("<h3 style='text-align: center;'>Special portfolio weights</h3>", unsafe_allow_html=True)
+
+            s_and_m = pd.DataFrame()
+            s_and_m["Weights for S"] = s_port_weights
+            s_and_m["Weights for M"] = m_port_weights
+            s_and_m["Volatilities"] = expected_stock_volatilities
+            s_and_m["Mean returns"] = expected_mean_returns
+            s_and_m["Stocks"] = stock_names
+
+            # Set 'Stocks' as the index
+            s_and_m = s_and_m.set_index("Stocks")
+
+            # Use st.dataframe to make it fill the column width dynamically
+            st.dataframe(s_and_m, use_container_width=True) 
+
+            st.markdown("<h3 style='text-align: center;'>Expectations for M and S</h3>", unsafe_allow_html=True)
+
+            
+            s_and_m_rr = pd.DataFrame({
+                'Portfolio S': [s_port_return , s_port_volatility],
+                'Portfolio M': [m_port_return, m_port_volatility],
+                'Portfolios': ["Expected return", "Expected risk"],
+
+            }, index=['Expected return', 'Expected risk'])
+
+            s_and_m_rr = s_and_m_rr.set_index("Portfolios")
+
+
+            # Display the DataFrame with the index column now as a regular column
+            st.dataframe(s_and_m_rr, use_container_width=True)
+
+
+        st.markdown("---")
+
+        # Visualising the returns of portfolios S and M
+        st.markdown("<h1 style='text-align: center;'>Historic returns for portfolios S and M</h1>", unsafe_allow_html=True)
+
+        s_portfolio_returns = calc_port_rets(weights = s_port_weights, stock_data = stock_data)
+        m_portfolio_returns = calc_port_rets(weights = m_port_weights, stock_data = stock_data)
+
+
+        both_portfolios = pd.DataFrame({
+            'Portfolio S': s_portfolio_returns,
+            'Portfolio M': m_portfolio_returns
+            })
+        
+        st.line_chart(both_portfolios)
+
+        # Some space to visualise the S and M portfolio returns
+        with st.expander("Returns of portfolios S and M preview"):
+            both_rets = pd.DataFrame({
+                "Portfolio S": s_portfolio_returns,
+                "Portfolio M": m_portfolio_returns
+            })
+            st.write(both_rets)
+
+
+        st.markdown("---")
+
+        # Conducting the Fama French 3 factor regression
+        st.markdown("<h1 style='text-align: center;'>Fama French 3 Factor Regression</h1>", unsafe_allow_html=True)
+
+        # Loading the factors
+        fama_french_factors = download_fama_french_factors_from_website(interval_key = interval_key, start_date = start_date, end_date = end_date)
+
+        # An option to review the data
+        with st.expander("Fama French factors preview"):
+            st.write(fama_french_factors)
+            st.write(f"There are {len(fama_french_factors)} observations of Fama French factors.")
+
+        # If the lengths of portfolio returns and fama frecnh factors are not the same
+        if len(s_portfolio_returns) != len(fama_french_factors):                    
+            common_dates = s_portfolio_returns.index.intersection(fama_french_factors.index)
+            s_portfolio_returns_aligned = s_portfolio_returns.loc[common_dates]
+            m_portfolio_returns_aligned = m_portfolio_returns.loc[common_dates]
+            fama_french_factors_aligned = fama_french_factors.loc[common_dates]
+
+        # If the indices of Fama French and Portfolio returns are not aligned
+        if len(s_portfolio_returns) == len(fama_french_factors): 
+            if s_portfolio_returns.index != fama_french_factors.index:
+                common_dates = s_portfolio_returns.index.intersection(fama_french_factors.index)
+                s_portfolio_returns_aligned = s_portfolio_returns.loc[common_dates]
+                m_portfolio_returns_aligned = m_portfolio_returns.loc[common_dates]
+                fama_french_factors_aligned = fama_french_factors.loc[common_dates]
+            
+        
+
+        # Conducting both regressions
+        s_port_results, s_port_model = simple_ols(regressand = s_portfolio_returns_aligned, regressors = fama_french_factors_aligned)
+        m_port_results, m_port_model = simple_ols(regressand = m_portfolio_returns_aligned, regressors = fama_french_factors_aligned)
+
+        # Breaking the page into two halves to print the regression results
+        st.markdown("<h1 style='text-align: center;'>Portfolios regression results</h1>", unsafe_allow_html=True)
+
+        left, right = st.columns(2)
+        with left: 
+            st.markdown("<h3 style='text-align: center;'>Portfolio S regression</h1>", unsafe_allow_html=True)
+            st.write(s_port_results.summary())
+        with right: 
+            st.markdown("<h3 style='text-align: center;'>Portfolio M regression</h1>", unsafe_allow_html=True)
+            st.write(m_port_results.summary())
+        st.markdown("---")
+        
+
+        # copied so far---------------------------------------------------------------------------------------------------------------------
+
+
+
+
+        hypot_returns, hypot_weights, hypot_sds = efficient_set(
+            mean_returns = expected_mean_returns, 
+            cov_matrix = cov_matrix, 
+            stock_dataframe = stocks_dataframe, 
+            returns_array = returns_array,
+            return_goal = None)
+
+
+        capital_investment_line(
+            hypot_returns = hypot_returns, 
+            hypot_weights = hypot_weights, 
+            hypot_sds = hypot_sds, 
+            stock_names = stock_names,
+            rf_rate = rf_rate, 
+            sharpe_ratio_array = sharpe_ratio_array, 
+            largest_volatility = largest_volatility,
+            s_port_volatility = s_port_volatility, 
+            s_port_return = s_port_return, 
+            m_port_volatility = m_port_volatility, 
+            m_port_return = m_port_return, 
+            expected_mean_returns = expected_mean_returns, 
+            expected_stock_volatilities = expected_stock_volatilities
+            )    
+        
+st.markdown("---")
+
+
+st.header("THIS IS WHERE THE REGRESSION THING APPEARS")
+
+
+# 1. import all the functions 
+# 2. create a new variable which will hold the returns for the portfolios 
+# 3. connect the newly created variable with the functions 
+# 4. enjoy
+
