@@ -34,7 +34,7 @@ import pmdarima as pm
 
 # Name of the page, wide layout and the picture on the web page
 st.set_page_config(
-    page_title = "2Portfolio Analysis ",
+    page_title = "Easy Regress App",
     page_icon = ":chart_with_upwards_trend",
     layout="wide")
 
