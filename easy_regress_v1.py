@@ -956,7 +956,8 @@ Explore the app and let data-driven decisions become second nature!
 # Adding stock names in the sidebar ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 with st.sidebar:
     st.header("Data configuration")
-    data_options = "Yahoo data search", "Data upload"
+    #data_options = "Yahoo data search", "Data upload"
+    data_options = "Yahoo data search"
     data_option = st.selectbox("Select the data configuration type:", options = data_options)
     if data_option == "Data upload":
         uploaded_file = st.file_uploader("Choose a file")
