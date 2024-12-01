@@ -1,6 +1,6 @@
 # have to find out what the fuck is that "n" variable in the efficient_front function
 
-import plotly.graph_objects as go
+#import plotly.graph_objects as go
 import yfinance as yf
 import streamlit as st
 import numpy as np
