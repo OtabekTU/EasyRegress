@@ -61,6 +61,7 @@ def load_stock_data_ind(ticker_list, interval_av, stock_type_av_index,
     stocks_dataframe = pd.DataFrame()
     stock_dates = pd.DataFrame()
     index = 0
+    api_key = st.secrets["av_api"]
     for ticker in ticker_list:        
         try:
             url = f'https://www.alphavantage.co/query?function=TIME_SERIES_{interval_av}&symbol={ticker}&outputsize=full&apikey={av_api}'
