@@ -1,8 +1,3 @@
-# efficient_front MUST GO FIRST BEFORE capital_investment_line
-# because the variables are initiated which are used by the capital_investment_line
-
-# in the end date, the written thing must be the todays date 
-
 
 import requests
 import json
